@@ -4,6 +4,26 @@ import plotly.express as px
 import seaborn as sns
 import joblib
 import numpy as np
+import base64
+from io import BytesIO
+import os
+
+
+
+def download_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine='xlsxwriter')
+    df.to_excel(writer, index=False)
+    writer.save()
+    excel_data = output.getvalue()
+    b64 = base64.b64encode(excel_data).decode()
+    href = f'<a href="data:application/vnd.ms-excel;base64,{b64}" download="predicted_profit.xlsx">Download Excel</a>'
+    return href
+
+@st.cache_data
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv().encode('utf-8')
 
 def add_bg_image():
     st.markdown(
@@ -26,14 +46,20 @@ def main():
     st.title("Try the model")
 
     st.subheader("Inference uploading a dataset")
-    data = st.file_uploader("Upload a Dataset", type=["csv"])
+    file = st.file_uploader("Upload a Dataset", type=["csv", "xlsx"])
 
-    if data is not None:
+    if file is not None:
+        
+        if os.path.splitext(file.name)[1] == ".xlsx":
+            df = pd.read_excel(file, engine='openpyxl')
+        else:
+            df = pd.read_csv(file)
+            if df['Profit'] is not None:
 
-        df = pd.read_csv(data)
+                df.drop(columns='Profit', inplace=True)
+
+
         df = df.round()
-        if df['Profit'] is not None:
-            df.drop(columns='Profit', inplace=True)
         st.dataframe(df)
 
         st.write('Dataframe Description')
@@ -46,8 +72,32 @@ def main():
         st.write('Updated Dataframe')
         st.dataframe(df)
 
+        csv = convert_df(df)
 
-    if data is None:
+        st.download_button(
+            label="Download data as CSV",
+            data=csv,
+            file_name='Predictions.csv',
+            mime='text/csv',
+        )
+
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+            # Write each dataframe to a different worksheet.
+            df.to_excel(writer, sheet_name='Sheet1', index=False)
+            # Close the Pandas Excel writer and output the Excel file to the buffer
+            writer.save()
+
+            download2 = st.download_button(
+                label="Download data as Excel",
+                data=buffer,
+                file_name='Predictions.xlsx',
+                mime='application/vnd.ms-excel'
+            )
+        
+
+
+    if file is None:
         st.subheader("Inference with manual inputs")
         input1 = st.number_input("Enter a value for R&D Spend", value=0.00)
         input2 = st.number_input("Enter a float value Administration", value=0.00)
