@@ -20,7 +20,7 @@ def add_bg_image():
 
 def main():
 
-    add_bg_image()
+    #add_bg_image()
     model = joblib.load("3input_regression_startup.pkl")
     #inference
     st.title("Try the model")
@@ -47,16 +47,16 @@ def main():
         st.dataframe(df)
 
 
-
-    st.subheader("Inference with manual inputs")
-    input1 = st.number_input("Enter a value for R&D Spend", value=0.00)
-    input2 = st.number_input("Enter a float value Administration", value=0.00)
-    input3 = st.number_input("Enter a float value Marketing Spend", value=0.00)
-    final_input = np.array([input1, input2, input3])
-    final_input = final_input.reshape(-1,3)
-    pred = model.predict(final_input)
-    pred_str = "%.2f" % pred[0]
-    st.write("Prediction: ", pred_str)
+    if data is None:
+        st.subheader("Inference with manual inputs")
+        input1 = st.number_input("Enter a value for R&D Spend", value=0.00)
+        input2 = st.number_input("Enter a float value Administration", value=0.00)
+        input3 = st.number_input("Enter a float value Marketing Spend", value=0.00)
+        final_input = np.array([input1, input2, input3])
+        final_input = final_input.reshape(-1,3)
+        pred = model.predict(final_input)
+        pred_str = "%.2f" % pred[0]
+        st.write("Prediction: ", pred_str)
         
 
 if __name__ == '__main__':
