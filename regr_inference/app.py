@@ -55,7 +55,6 @@ def main():
         else:
             df = pd.read_csv(file)
             if df['Profit'] is not None:
-
                 df.drop(columns='Profit', inplace=True)
 
 
