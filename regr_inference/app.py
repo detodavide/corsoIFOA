@@ -43,7 +43,7 @@ def main():
     #add_bg_image()
     model = joblib.load("3input_regression_startup.pkl")
     #inference
-    st.title("Try the model")
+    st.title("Try the model") 
 
     st.subheader("Inference uploading a dataset")
     file = st.file_uploader("Upload a Dataset", type=["csv", "xlsx"])
